@@ -1,6 +1,7 @@
 package router
 
 import (
+	"golang-chat-backend/authentication"
 	"golang-chat-backend/handler"
 
 	"github.com/gin-gonic/gin"
@@ -17,9 +18,17 @@ func (router *Router) InitalizeRouter() {
 	r.NoRoute(handler.NoRouteHandler)
 	r.NoMethod(handler.NoMethodAllowed)
 
-	group := r.Group("/api")
+	group := r.Group("", authentication.BasicAuth).Group("/api")
+	account := group.Group("/account")
 
+	// health check
 	group.GET("/health", handler.HealthCheck)
+
+	// account
+	account.POST("/register", handler.RegistrationHandler)
+	account.POST("/login", handler.LoginHandler)
+	account.POST("/logout", handler.LogoutHandler)
+	account.POST("/refresh", handler.RefreshTokenHandler)
 }
 
 func (router *Router) Start(port string) {
