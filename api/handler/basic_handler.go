@@ -1,13 +1,13 @@
 package handler
 
 import (
-	"golang-chat-backend/json/response"
+	"golang-chat-backend/models/output"
 
 	"github.com/gin-gonic/gin"
 )
 
 func NoRouteHandler(ctx *gin.Context) {
-	ctx.JSON(404, response.BaseResponse{
+	ctx.JSON(404, output.BaseResponse{
 		Message: "",
 		Data:    "",
 		Error:   "404 Endpoint not found",
@@ -15,7 +15,7 @@ func NoRouteHandler(ctx *gin.Context) {
 }
 
 func NoMethodAllowed(ctx *gin.Context) {
-	ctx.JSON(400, response.BaseResponse{
+	ctx.JSON(400, output.BaseResponse{
 		Message: "",
 		Data:    "",
 		Error:   "No Method Allowed",
@@ -23,7 +23,7 @@ func NoMethodAllowed(ctx *gin.Context) {
 }
 
 func HealthCheck(ctx *gin.Context) {
-	ctx.JSON(200, response.BaseResponse{
+	ctx.JSON(200, output.BaseResponse{
 		Message: "",
 		Data:    "",
 		Error:   "Chat Message API is Up",
