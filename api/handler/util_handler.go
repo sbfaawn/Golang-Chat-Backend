@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"golang-chat-backend/json/response"
+	"golang-chat-backend/models/output"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,7 +19,7 @@ func generateResponse(ctx *gin.Context, statusCode int, data any, err error) {
 		errorMessage = err.Error()
 	}
 
-	ctx.JSON(statusCode, response.BaseResponse{
+	ctx.JSON(statusCode, output.BaseResponse{
 		Message: message,
 		Data:    data,
 		Error:   errorMessage,

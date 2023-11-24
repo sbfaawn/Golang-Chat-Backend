@@ -1,6 +1,10 @@
 package handler
 
-import "github.com/gin-gonic/gin"
+import (
+	"golang-chat-backend/models"
+
+	"github.com/gin-gonic/gin"
+)
 
 const (
 	tokenLifetime int    = 5
@@ -8,6 +12,11 @@ const (
 )
 
 func RegistrationHandler(ctx *gin.Context) {
+	account := models.Account{}
+	if err := ctx.BindJSON(&account); err != nil {
+		generateResponse(ctx, 400, "", err)
+		return
+	}
 
 }
 
