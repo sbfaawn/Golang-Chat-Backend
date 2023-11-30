@@ -8,7 +8,7 @@ import (
 
 type Account struct {
 	Id         uint           `gorm:"primaryKey;autoIncrement;column:id;->;<-:create"`
-	Email      string         `gotm:"column:email;unique;size:256;"`
+	Email      string         `gorm:"column:email;unique;size:256;"`
 	Username   string         `gorm:"column:username;unique;size:256;default:'';"`
 	Password   string         `gorm:"column:password;size:2000;default:'';"`
 	IsVerified bool           `gorm:"column:verified;default:false"`

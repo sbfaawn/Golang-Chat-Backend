@@ -8,35 +8,36 @@ import (
 )
 
 type Server struct {
-	engine *gin.Engine
-}
-
-func (s *Server) InitalizeServer() {
-	server := s.engine
-
-	server.Use(gin.Recovery())
-	server.NoRoute(handler.NoRouteHandler)
-	server.NoMethod(handler.NoMethodAllowed)
-
-	group := server.Group("", authentication.BasicAuth).Group("/api")
-	account := group.Group("/account")
-
-	// health check
-	group.GET("/health", handler.HealthCheck)
-
-	// account
-	account.POST("/register", handler.RegistrationHandler)
-	account.POST("/login", handler.LoginHandler)
-	account.POST("/logout", handler.LogoutHandler)
-	account.POST("/refresh", handler.RefreshTokenHandler)
-}
-
-func (s *Server) Start(port string) {
-	s.engine.Run(":" + port)
+	engine      *gin.Engine
+	httpHandler *handler.HttpHandler
 }
 
 func NewServer() *Server {
 	return &Server{
 		engine: gin.Default(),
 	}
+}
+
+func (s *Server) InitalizeServer() {
+	server := s.engine
+
+	server.Use(gin.Recovery())
+	server.NoRoute(s.httpHandler.NoRouteHandler)
+	server.NoMethod(s.httpHandler.NoMethodAllowed)
+
+	group := server.Group("", authentication.CheckBasicAuth).Group("/api")
+	account := group.Group("/account")
+
+	// health check
+	group.GET("/health", s.httpHandler.HealthCheck)
+
+	// account
+	account.POST("/register", s.httpHandler.RegistrationHandler)
+	account.POST("/login", s.httpHandler.LoginHandler)
+	account.POST("/logout", s.httpHandler.LogoutHandler)
+	account.POST("/refresh", s.httpHandler.RefreshTokenHandler)
+}
+
+func (s *Server) Start(port string) {
+	s.engine.Run(":" + port)
 }
