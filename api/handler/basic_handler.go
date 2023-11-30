@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NoRouteHandler(ctx *gin.Context) {
+func (h *HttpHandler) NoRouteHandler(ctx *gin.Context) {
 	ctx.JSON(404, output.BaseResponse{
 		Message: "",
 		Data:    "",
@@ -14,7 +14,7 @@ func NoRouteHandler(ctx *gin.Context) {
 	})
 }
 
-func NoMethodAllowed(ctx *gin.Context) {
+func (h *HttpHandler) NoMethodAllowed(ctx *gin.Context) {
 	ctx.JSON(400, output.BaseResponse{
 		Message: "",
 		Data:    "",
@@ -22,7 +22,7 @@ func NoMethodAllowed(ctx *gin.Context) {
 	})
 }
 
-func HealthCheck(ctx *gin.Context) {
+func (h *HttpHandler) HealthCheck(ctx *gin.Context) {
 	ctx.JSON(200, output.BaseResponse{
 		Message: "",
 		Data:    "",

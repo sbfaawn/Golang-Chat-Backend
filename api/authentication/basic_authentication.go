@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func BasicAuth(ctx *gin.Context) {
+func CheckBasicAuth(ctx *gin.Context) {
 	username, password, isOk := ctx.Request.BasicAuth()
 
 	if !(isOk && username == "chatuser" && password == "HolE34@HJ") {
