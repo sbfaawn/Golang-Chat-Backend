@@ -12,9 +12,10 @@ type Server struct {
 	httpHandler *handler.HttpHandler
 }
 
-func NewServer() *Server {
+func NewServer(httpHandler *handler.HttpHandler) *Server {
 	return &Server{
-		engine: gin.Default(),
+		engine:      gin.Default(),
+		httpHandler: httpHandler,
 	}
 }
 
@@ -38,6 +39,6 @@ func (s *Server) InitalizeServer() {
 	account.POST("/refresh", s.httpHandler.RefreshTokenHandler)
 }
 
-func (s *Server) Start(port string) {
-	s.engine.Run(":" + port)
+func (s *Server) Start(port string) error {
+	return s.engine.Run(":" + port)
 }

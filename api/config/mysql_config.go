@@ -29,7 +29,7 @@ type mySqlConnection struct {
 	database    string
 	isPopulated bool
 	isMigrate   bool
-	DB          *gorm.DB
+	db          *gorm.DB
 }
 
 func NewMySqlConnection(option MySqlOption) *mySqlConnection {
@@ -59,7 +59,7 @@ func (conn *mySqlConnection) ConnectToDB() error {
 	)
 
 	dsn := conn.username + ":" + conn.password + "@tcp(localhost:3306)/" + conn.database + "?charset=utf8&parseTime=True&loc=Local"
-	conn.DB, err = gorm.Open(mysql.New(
+	conn.db, err = gorm.Open(mysql.New(
 		mysql.Config{
 			DSN: dsn,
 		}),
@@ -72,19 +72,23 @@ func (conn *mySqlConnection) ConnectToDB() error {
 		log.Fatalln("? : Could Established Connection to Databases", err)
 	}
 
-	if conn.isMigrate {
-		err = conn.DB.AutoMigrate()
-		fmt.Println("Error DB Migration : ", err)
-		fmt.Println("Table Migration is done")
-	}
-
-	if conn.isPopulated {
-		populateData(conn.DB)
-	}
-
 	return err
 }
 
-func populateData(db *gorm.DB) {
-	fmt.Println("Data has been Populated!!!!")
+func (conn *mySqlConnection) PopulateData() {
+	if conn.isPopulated {
+		fmt.Println("Data has been Populated!!!!")
+	}
+}
+
+func (conn *mySqlConnection) MigrateData() {
+	if conn.isMigrate {
+		err := conn.db.AutoMigrate()
+		fmt.Println("Error DB Migration : ", err)
+		fmt.Println("Table Migration is done")
+	}
+}
+
+func (conn *mySqlConnection) GetDB() *gorm.DB {
+	return conn.db
 }

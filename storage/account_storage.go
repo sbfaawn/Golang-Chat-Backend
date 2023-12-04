@@ -9,7 +9,7 @@ import (
 )
 
 type AccountStorageInterface interface {
-	SaveAccount(ctx *gin.Context, account models.Account) error
+	SaveAccount(ctx *gin.Context, account *models.Account) error
 	GetAccountByUsername(ctx *gin.Context, username string) (models.Account, error)
 	GetAccountByEmail(ctx *gin.Context, email string) (models.Account, error)
 	UpdatePasswordByUsername(ctx *gin.Context, username string, newPassword string) error
@@ -26,7 +26,7 @@ func NewAccountStorage(DB *gorm.DB) *accountStorage {
 	}
 }
 
-func (storage *accountStorage) SaveAccount(ctx *gin.Context, account models.Account) error {
+func (storage *accountStorage) SaveAccount(ctx *gin.Context, account *models.Account) error {
 	var err error
 	db := storage.DB
 

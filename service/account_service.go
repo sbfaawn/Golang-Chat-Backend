@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"golang-chat-backend/models"
 	"golang-chat-backend/storage"
 	"golang-chat-backend/util"
@@ -27,18 +28,44 @@ func NewAccountService(accountStorage storage.AccountStorageInterface, encryptor
 	}
 }
 
-func (service *accountService) SaveAccount(ctx *gin.Context, account *models.Account) error {
+func (s *accountService) SaveAccount(ctx *gin.Context, account *models.Account) error {
+	_, err := s.accountStorage.GetAccountByUsername(ctx, account.Username)
+
+	if err != nil {
+		return errors.New("Account with username " + account.Username + " is already exist")
+	}
+
+	s.encryptor.Password = account.Password
+	passEncrypt, err := s.encryptor.Encrypt()
+
+	if err != nil {
+		return errors.New("Error is occured when encrypt password")
+	}
+
+	account.Password = passEncrypt
+	err = s.accountStorage.SaveAccount(ctx, account)
+
+	if err != nil {
+		return errors.New("Error when trying create an account")
+	}
+
 	return nil
 }
 
-func (service *accountService) ChangePassword(ctx *gin.Context, account *models.Account) error {
+func (s *accountService) ChangePassword(ctx *gin.Context, account *models.Account) error {
 	return nil
 }
 
-func (service *accountService) AccountVerification(ctx *gin.Context, account *models.Account) (models.Account, error) {
+func (s *accountService) AccountVerification(ctx *gin.Context, account *models.Account) (models.Account, error) {
 	return models.Account{}, nil
 }
 
-func (service *accountService) Login(ctx *gin.Context, account *models.Account) error {
-	return nil
+func (s *accountService) Login(ctx *gin.Context, account *models.Account) error {
+	_, err := s.accountStorage.GetAccountByUsername(ctx, account.Username)
+
+	if err != nil {
+		return nil
+	}
+
+	return errors.New("Account with username " + account.Username + " is not exist")
 }
