@@ -12,7 +12,7 @@ import (
 type AccountServiceInterface interface {
 	SaveAccount(ctx *gin.Context, account *models.Account) error
 	ChangePassword(ctx *gin.Context, account *models.Account) error
-	AccountVerification(ctx *gin.Context, account *models.Account) (models.Account, error)
+	AccountVerification(ctx *gin.Context, account *models.Account) error
 	Login(ctx *gin.Context, account *models.Account) error
 }
 
@@ -31,7 +31,7 @@ func NewAccountService(accountStorage storage.AccountStorageInterface, encryptor
 func (s *accountService) SaveAccount(ctx *gin.Context, account *models.Account) error {
 	_, err := s.accountStorage.GetAccountByUsername(ctx, account.Username)
 
-	if err != nil {
+	if err == nil {
 		return errors.New("Account with username " + account.Username + " is already exist")
 	}
 
@@ -53,19 +53,29 @@ func (s *accountService) SaveAccount(ctx *gin.Context, account *models.Account) 
 }
 
 func (s *accountService) ChangePassword(ctx *gin.Context, account *models.Account) error {
+	err := s.accountStorage.UpdatePasswordByUsername(ctx, account.Username, account.Password)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (s *accountService) AccountVerification(ctx *gin.Context, account *models.Account) (models.Account, error) {
-	return models.Account{}, nil
+func (s *accountService) AccountVerification(ctx *gin.Context, account *models.Account) error {
+	err := s.accountStorage.UpdateVerifiedByEmail(ctx, account.Email)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *accountService) Login(ctx *gin.Context, account *models.Account) error {
 	_, err := s.accountStorage.GetAccountByUsername(ctx, account.Username)
 
 	if err != nil {
-		return nil
+		return errors.New("Account with username " + account.Username + " is not exist")
 	}
 
-	return errors.New("Account with username " + account.Username + " is not exist")
+	return nil
 }

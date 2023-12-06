@@ -2,6 +2,7 @@ package storage
 
 import (
 	"errors"
+	"fmt"
 	"golang-chat-backend/models"
 
 	"github.com/gin-gonic/gin"
@@ -53,6 +54,7 @@ func (storage *accountStorage) GetAccountByUsername(ctx *gin.Context, username s
 	var err error
 	var account models.Account
 
+	fmt.Println("username : " + username)
 	tx := db.Begin()
 	err = tx.First(&account, "username = ?", username).Error
 

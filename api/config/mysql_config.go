@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"golang-chat-backend/models"
 	"log"
 	"os"
 	"time"
@@ -83,7 +84,7 @@ func (conn *mySqlConnection) PopulateData() {
 
 func (conn *mySqlConnection) MigrateData() {
 	if conn.isMigrate {
-		err := conn.db.AutoMigrate()
+		err := conn.db.AutoMigrate(models.Account{}, models.Session{})
 		fmt.Println("Error DB Migration : ", err)
 		fmt.Println("Table Migration is done")
 	}

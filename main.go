@@ -28,7 +28,7 @@ func initialization() *server.Server {
 		Username:    "root",
 		Password:    "root",
 		Port:        "3306",
-		Database:    "Chat",
+		Database:    "chat",
 		IsPopulated: false,
 		IsMigrate:   true,
 	}
@@ -37,10 +37,15 @@ func initialization() *server.Server {
 	if err := conn.ConnectToDB(); err != nil {
 		log.Fatal(err)
 	}
+	conn.MigrateData()
+
+	sessionStorage := storage.NewSessionStorage(conn.GetDB())
+	sessionService := service.NewSessionService(sessionStorage)
 
 	accountStorage := storage.NewAccountStorage(conn.GetDB())
 	accountService := service.NewAccountService(accountStorage, pe)
-	handler := handler.NewHttpHandler(accountService)
+
+	handler := handler.NewHttpHandler(accountService, sessionService)
 	server := server.NewServer(handler)
 
 	return server

@@ -65,15 +65,20 @@ func (h *HttpHandler) LoginHandler(ctx *gin.Context) {
 		return
 	}
 
-	generateResponse(ctx, 200, "Account is register succesfully", nil)
+	session, err2 := h.sessionService.CreateSession(ctx, account.Username)
+
+	if err2 != nil {
+		generateResponse(ctx, 400, "", err)
+		return
+	}
+
+	ctx.SetCookie("SessionID", session.Id, session.ExpiredAt.Time.Second(), "/", "localhost", false, true)
+	generateResponse(ctx, 200, "Login Successfully", nil)
 }
 
 func (h *HttpHandler) LogoutHandler(ctx *gin.Context) {
-
-	/*
-		ctx.SetCookie(jwtTokenKey, "", -1, "/", "localhost", false, true)
-		generateResponse(ctx, 200, "", nil)
-	*/
+	ctx.SetCookie("SessionID", "", -1, "/", "localhost", false, true)
+	generateResponse(ctx, 200, "", nil)
 }
 
 func (h *HttpHandler) RefreshTokenHandler(ctx *gin.Context) {
