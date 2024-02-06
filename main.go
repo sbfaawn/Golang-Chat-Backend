@@ -14,9 +14,10 @@ import (
 func main() {
 	fmt.Println("Chat Message Server is Running")
 
-	r := initialization()
-	r.InitalizeServer()
-	log.Fatal(r.Start("8080"))
+	server := initialization()
+	server.InitalizeServer()
+	log.Fatal(server.Start("8080"))
+
 	fmt.Println("Server is running on port 8080")
 }
 

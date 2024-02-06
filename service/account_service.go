@@ -71,10 +71,17 @@ func (s *accountService) AccountVerification(ctx *gin.Context, account *models.A
 }
 
 func (s *accountService) Login(ctx *gin.Context, account *models.Account) error {
-	_, err := s.accountStorage.GetAccountByUsername(ctx, account.Username)
+	result, err := s.accountStorage.GetAccountByUsername(ctx, account.Username)
 
 	if err != nil {
 		return errors.New("Account with username " + account.Username + " is not exist")
+	}
+
+	s.encryptor.Password = account.Password
+	isMatchPass := s.encryptor.IsHashedPasswordMatch(result.Password)
+
+	if !isMatchPass {
+		return errors.New("password is not match")
 	}
 
 	return nil

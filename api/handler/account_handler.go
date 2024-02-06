@@ -60,7 +60,8 @@ func (h *HttpHandler) LoginHandler(ctx *gin.Context) {
 
 	err := h.accountservice.Login(ctx, &account)
 
-	if err != nil {
+	// user
+	if err == nil {
 		generateResponse(ctx, 400, "", err)
 		return
 	}
@@ -77,10 +78,39 @@ func (h *HttpHandler) LoginHandler(ctx *gin.Context) {
 }
 
 func (h *HttpHandler) LogoutHandler(ctx *gin.Context) {
+	sessionId, err := ctx.Cookie("SessionID")
+
+	if err != nil {
+		generateResponse(ctx, 404, "", err)
+		return
+	}
+
+	err = h.sessionService.RemoveSession(ctx, sessionId)
+
+	if err != nil {
+		generateResponse(ctx, 400, "", err)
+		return
+	}
+
 	ctx.SetCookie("SessionID", "", -1, "/", "localhost", false, true)
 	generateResponse(ctx, 200, "", nil)
 }
 
 func (h *HttpHandler) RefreshTokenHandler(ctx *gin.Context) {
+	sessionId, err := ctx.Cookie("SessionID")
 
+	if err != nil {
+		generateResponse(ctx, 404, "", err)
+		return
+	}
+
+	session, err := h.sessionService.UpdateSessionExpiration(ctx, sessionId)
+
+	if err != nil {
+		generateResponse(ctx, 404, "", err)
+		return
+	}
+
+	ctx.SetCookie("SessionID", session.Id, session.ExpiredAt.Time.Second(), "/", "localhost", false, true)
+	generateResponse(ctx, 200, "Token has been refreshed", nil)
 }
