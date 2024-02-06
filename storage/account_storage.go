@@ -2,6 +2,7 @@ package storage
 
 import (
 	"errors"
+	"fmt"
 	"golang-chat-backend/models"
 
 	"github.com/gin-gonic/gin"
@@ -9,7 +10,7 @@ import (
 )
 
 type AccountStorageInterface interface {
-	SaveAccount(ctx *gin.Context, account models.Account) error
+	SaveAccount(ctx *gin.Context, account *models.Account) error
 	GetAccountByUsername(ctx *gin.Context, username string) (models.Account, error)
 	GetAccountByEmail(ctx *gin.Context, email string) (models.Account, error)
 	UpdatePasswordByUsername(ctx *gin.Context, username string, newPassword string) error
@@ -26,7 +27,7 @@ func NewAccountStorage(DB *gorm.DB) *accountStorage {
 	}
 }
 
-func (storage *accountStorage) SaveAccount(ctx *gin.Context, account models.Account) error {
+func (storage *accountStorage) SaveAccount(ctx *gin.Context, account *models.Account) error {
 	var err error
 	db := storage.DB
 
@@ -53,6 +54,7 @@ func (storage *accountStorage) GetAccountByUsername(ctx *gin.Context, username s
 	var err error
 	var account models.Account
 
+	fmt.Println("username : " + username)
 	tx := db.Begin()
 	err = tx.First(&account, "username = ?", username).Error
 

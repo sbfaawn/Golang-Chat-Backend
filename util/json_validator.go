@@ -23,6 +23,7 @@ func NewJsonValidator() *JsonValidator {
 
 func (jv *JsonValidator) Validate(model any) error {
 	var err error
+	//err = jv.v.Struct(model)
 	err = jv.v.Struct(model)
 	return err
 }

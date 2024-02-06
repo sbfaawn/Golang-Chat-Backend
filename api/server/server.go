@@ -1,7 +1,6 @@
 package server
 
 import (
-	"golang-chat-backend/api/authentication"
 	"golang-chat-backend/api/handler"
 
 	"github.com/gin-gonic/gin"
@@ -12,9 +11,10 @@ type Server struct {
 	httpHandler *handler.HttpHandler
 }
 
-func NewServer() *Server {
+func NewServer(httpHandler *handler.HttpHandler) *Server {
 	return &Server{
-		engine: gin.Default(),
+		engine:      gin.Default(),
+		httpHandler: httpHandler,
 	}
 }
 
@@ -25,7 +25,7 @@ func (s *Server) InitalizeServer() {
 	server.NoRoute(s.httpHandler.NoRouteHandler)
 	server.NoMethod(s.httpHandler.NoMethodAllowed)
 
-	group := server.Group("", authentication.CheckBasicAuth).Group("/api")
+	group := server.Group("/api")
 	account := group.Group("/account")
 
 	// health check
@@ -34,10 +34,10 @@ func (s *Server) InitalizeServer() {
 	// account
 	account.POST("/register", s.httpHandler.RegistrationHandler)
 	account.POST("/login", s.httpHandler.LoginHandler)
-	account.POST("/logout", s.httpHandler.LogoutHandler)
-	account.POST("/refresh", s.httpHandler.RefreshTokenHandler)
+	account.GET("/logout", s.httpHandler.LogoutHandler)
+	account.GET("/refresh", s.httpHandler.RefreshTokenHandler)
 }
 
-func (s *Server) Start(port string) {
-	s.engine.Run(":" + port)
+func (s *Server) Start(port string) error {
+	return s.engine.Run(":" + port)
 }

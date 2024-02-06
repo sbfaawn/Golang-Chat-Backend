@@ -7,9 +7,8 @@ import (
 )
 
 type Account struct {
-	Id         uint           `gorm:"primaryKey;autoIncrement;column:id;->;<-:create"`
+	Username   string         `gorm:"primaryKey;column:username;unique;size:256;default:'';"`
 	Email      string         `gorm:"column:email;unique;size:256;"`
-	Username   string         `gorm:"column:username;unique;size:256;default:'';"`
 	Password   string         `gorm:"column:password;size:2000;default:'';"`
 	IsVerified bool           `gorm:"column:verified;default:false"`
 	CreatedAt  time.Time      `gorm:"column:created_at;->;<-:create"`
