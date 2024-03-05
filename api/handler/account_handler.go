@@ -114,3 +114,12 @@ func (h *HttpHandler) RefreshTokenHandler(ctx *gin.Context) {
 	ctx.SetCookie("SessionID", session.Id, session.ExpiredAt.Time.Second(), "/", "localhost", false, true)
 	generateResponse(ctx, 200, "Token has been refreshed", nil)
 }
+
+func (h *HttpHandler) CheckSession(ctx *gin.Context) {
+	sessionId, err := ctx.Cookie("SessionID")
+
+	if err != nil {
+		generateResponse(ctx, 404, "", err)
+		return
+	}
+}

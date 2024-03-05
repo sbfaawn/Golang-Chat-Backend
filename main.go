@@ -40,13 +40,16 @@ func initialization() *server.Server {
 	}
 	conn.MigrateData()
 
+	messageStorage := storage.NewMessageStorage(conn.GetDB())
+	messageService := service.NewMessageService(messageStorage)
+
 	sessionStorage := storage.NewSessionStorage(conn.GetDB())
 	sessionService := service.NewSessionService(sessionStorage)
 
 	accountStorage := storage.NewAccountStorage(conn.GetDB())
 	accountService := service.NewAccountService(accountStorage, pe)
 
-	handler := handler.NewHttpHandler(accountService, sessionService)
+	handler := handler.NewHttpHandler(accountService, sessionService, messageService)
 	server := server.NewServer(handler)
 
 	return server
