@@ -116,10 +116,17 @@ func (h *HttpHandler) RefreshTokenHandler(ctx *gin.Context) {
 }
 
 func (h *HttpHandler) CheckSession(ctx *gin.Context) {
+	var err error
 	sessionId, err := ctx.Cookie("SessionID")
 
 	if err != nil {
 		generateResponse(ctx, 404, "", err)
+		return
+	}
+
+	err = h.sessionService.CheckSession(ctx, sessionId)
+	if err != nil {
+		generateResponse(ctx, 404, "session id is not found", err)
 		return
 	}
 }

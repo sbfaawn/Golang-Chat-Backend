@@ -27,7 +27,7 @@ func (s *Server) InitalizeServer() {
 
 	group := server.Group("/api")
 	account := group.Group("/account")
-	message := group.Group("/message")
+	message := group.Group("/message", s.httpHandler.CheckSession)
 
 	// health check
 	group.GET("/health", s.httpHandler.HealthCheck)
