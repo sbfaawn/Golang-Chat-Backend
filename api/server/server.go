@@ -27,6 +27,7 @@ func (s *Server) InitalizeServer() {
 
 	group := server.Group("/api")
 	account := group.Group("/account")
+	message := group.Group("/message", s.httpHandler.CheckSession)
 
 	// health check
 	group.GET("/health", s.httpHandler.HealthCheck)
@@ -36,6 +37,11 @@ func (s *Server) InitalizeServer() {
 	account.POST("/login", s.httpHandler.LoginHandler)
 	account.GET("/logout", s.httpHandler.LogoutHandler)
 	account.GET("/refresh", s.httpHandler.RefreshTokenHandler)
+
+	// message
+	message.POST("", s.httpHandler.SendMessages)
+	message.GET("", s.httpHandler.GetConversation)
+	message.DELETE("", s.httpHandler.DeleteMessage)
 }
 
 func (s *Server) Start(port string) error {
