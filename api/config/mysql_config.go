@@ -59,7 +59,7 @@ func (conn *mySqlConnection) ConnectToDB() error {
 		},
 	)
 
-	dsn := conn.username + ":" + conn.password + "@tcp(localhost:3306)/" + conn.database + "?charset=utf8&parseTime=True&loc=Local"
+	dsn := conn.username + ":" + conn.password + "@tcp(" + conn.address + ":" + conn.port + ")/" + conn.database + "?charset=utf8&parseTime=True&loc=Local"
 	conn.db, err = gorm.Open(mysql.New(
 		mysql.Config{
 			DSN: dsn,

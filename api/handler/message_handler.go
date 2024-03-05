@@ -41,18 +41,14 @@ func (h *HttpHandler) SendMessages(ctx *gin.Context) {
 }
 
 func (h *HttpHandler) GetConversation(ctx *gin.Context) {
-	input := input.MessageInput{}
-	if err := ctx.BindJSON(&input); err != nil {
-		generateResponse(ctx, 400, "", err)
-		return
+	sender := ctx.Query("sender")
+	receiver := ctx.Query("receiver")
+
+	if sender == "" || receiver == "" {
+		generateResponse(ctx, 400, "", errors.New("sender or receiver is not specified on request"))
 	}
 
-	if err := h.JsonValidator.Validate(&input); err != nil {
-		generateResponse(ctx, 400, "", err)
-		return
-	}
-
-	messages, err := h.messageService.GetConversation(ctx, input.Sender, input.Receiver)
+	messages, err := h.messageService.GetConversation(ctx, sender, receiver)
 
 	if err == nil {
 		generateResponse(ctx, 400, "", err)

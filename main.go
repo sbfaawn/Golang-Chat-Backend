@@ -28,7 +28,7 @@ func initialization() *server.Server {
 		Address:     "localhost",
 		Username:    "root",
 		Password:    "root",
-		Port:        "3306",
+		Port:        "3307",
 		Database:    "chat",
 		IsPopulated: false,
 		IsMigrate:   true,
