@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"golang-chat-backend/models"
 	"golang-chat-backend/models/input"
 
@@ -61,7 +62,7 @@ func (h *HttpHandler) LoginHandler(ctx *gin.Context) {
 	err := h.accountservice.Login(ctx, &account)
 
 	// user
-	if err == nil {
+	if err != nil {
 		generateResponse(ctx, 400, "", err)
 		return
 	}
@@ -121,12 +122,14 @@ func (h *HttpHandler) CheckSession(ctx *gin.Context) {
 
 	if err != nil {
 		generateResponse(ctx, 404, "", err)
+		ctx.AbortWithError(404, errors.New("session is not included on request"))
 		return
 	}
 
 	err = h.sessionService.CheckSession(ctx, sessionId)
 	if err != nil {
 		generateResponse(ctx, 404, "session id is not found", err)
+		ctx.AbortWithError(404, errors.New("session is not found, please input valid session ID or login"))
 		return
 	}
 }

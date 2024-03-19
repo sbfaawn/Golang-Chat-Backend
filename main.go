@@ -29,7 +29,7 @@ func initialization() *server.Server {
 		Username:    "root",
 		Password:    "root",
 		Port:        "3307",
-		Database:    "chat",
+		Database:    "chat-database",
 		IsPopulated: false,
 		IsMigrate:   true,
 	}
