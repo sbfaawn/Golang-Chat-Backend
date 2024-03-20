@@ -1,10 +1,10 @@
 package storage
 
 import (
-	"errors"
 	"golang-chat-backend/models"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -16,31 +16,23 @@ type SessionStorageInterface interface {
 }
 
 type SessionStorage struct {
-	db *gorm.DB
+	db          *gorm.DB
+	redisClient *redis.Client
 }
 
-func NewSessionStorage(DB *gorm.DB) *SessionStorage {
+func NewSessionStorage(DB *gorm.DB, redisClient *redis.Client) *SessionStorage {
 	return &SessionStorage{
-		db: DB,
+		db:          DB,
+		redisClient: redisClient,
 	}
 }
 
 func (storage *SessionStorage) SaveSession(ctx *gin.Context, session *models.Session) error {
 	var err error
-	db := storage.db
+	redisClient := storage.redisClient
 
-	tx := db.Begin()
-	err = tx.Create(&session).Error
-
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	err = tx.Commit().WithContext(ctx).Error
-
-	if err != nil {
-		tx.Rollback()
+	setCmd := redisClient.Set(ctx, session.Username, session.Id, session.TTL)
+	if err = setCmd.Err(); err != nil {
 		return err
 	}
 
@@ -48,81 +40,45 @@ func (storage *SessionStorage) SaveSession(ctx *gin.Context, session *models.Ses
 }
 
 func (storage *SessionStorage) GetSessionById(ctx *gin.Context, sessionId string) (models.Session, error) {
-	db := storage.db
 	var err error
-	var session models.Session
+	session := models.Session{}
+	redisClient := storage.redisClient
 
-	tx := db.Begin()
-	err = tx.First(&session, "id = ?", sessionId).Error
-
-	if err != nil {
-		tx.Rollback()
+	getCmd := redisClient.Get(ctx, sessionId)
+	if err = getCmd.Err(); err != nil {
 		return session, err
 	}
 
-	err = tx.Commit().WithContext(ctx).Error
-
+	res, err := getCmd.Result()
 	if err != nil {
-		tx.Rollback()
 		return session, err
 	}
+
+	session.Username = res
+	session.Id = sessionId
 
 	return session, nil
 }
 
 func (storage *SessionStorage) DeleteSession(ctx *gin.Context, sessionId string) error {
 	var err error
-	db := storage.db
-	session := models.Session{
-		Id: sessionId,
-	}
+	redisClient := storage.redisClient
 
-	tx := db.Begin()
-	delete := tx.Model(&session).Delete(&session)
-
-	if delete.Error != nil {
-		tx.Rollback()
+	delCmd := redisClient.Del(ctx, sessionId)
+	if err = delCmd.Err(); err != nil {
 		return err
-	}
-
-	result := delete.Commit().WithContext(ctx)
-
-	if result.Error != nil {
-		return err
-	}
-
-	if delete.RowsAffected == result.RowsAffected {
-		tx.Rollback()
-		return errors.New("record with sessionID is not found")
 	}
 
 	return nil
 }
 
 func (storage *SessionStorage) UpdateSessionExpiration(ctx *gin.Context, session *models.Session) error {
-	db := storage.db
 	var err error
+	redisClient := storage.redisClient
 
-	tx := db.Begin()
-	update := tx.Model(&models.Account{}).Where("id = ? AND username = ?", session.Id, session.Username).Updates(map[string]any{
-		"expired_at": session.ExpiredAt,
-	})
-
-	if err != nil {
-		tx.Rollback()
+	setCmd := redisClient.Set(ctx, session.Username, session.Id, session.TTL)
+	if err = setCmd.Err(); err != nil {
 		return err
-	}
-
-	result := update.Commit().WithContext(ctx)
-
-	if result.Error != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if update.RowsAffected == result.RowsAffected {
-		tx.Rollback()
-		return errors.New("record with sessionId and username is not found")
 	}
 
 	return nil

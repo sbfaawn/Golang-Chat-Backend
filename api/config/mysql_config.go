@@ -84,7 +84,7 @@ func (conn *mySqlConnection) PopulateData() {
 
 func (conn *mySqlConnection) MigrateData() {
 	if conn.isMigrate {
-		err := conn.db.AutoMigrate(models.Account{}, models.Session{}, models.Message{})
+		err := conn.db.AutoMigrate(models.Account{}, models.Message{})
 		fmt.Println("Error DB Migration : ", err)
 		fmt.Println("Table Migration is done")
 	}
