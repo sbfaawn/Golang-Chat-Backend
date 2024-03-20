@@ -1,7 +1,6 @@
 package service
 
 import (
-	"database/sql"
 	"errors"
 	"golang-chat-backend/models"
 	"golang-chat-backend/storage"
@@ -34,15 +33,11 @@ func NewSessionService(sessionStorage storage.SessionStorageInterface) *SessionS
 
 func (s *SessionService) CreateSession(ctx *gin.Context, username string) (models.Session, error) {
 	sessionToken := uuid.NewString()
-	expiredAt := time.Now().Add(time.Minute * SESSION_TTL)
 
 	session := models.Session{
 		Id:       sessionToken,
 		Username: username,
-		ExpiredAt: sql.NullTime{
-			Time:  expiredAt,
-			Valid: true,
-		},
+		TTL:      time.Minute * SESSION_TTL,
 	}
 
 	err := s.sessionStorage.SaveSession(ctx, &session)
@@ -85,10 +80,7 @@ func (s *SessionService) UpdateSessionExpiration(ctx *gin.Context, sessionId str
 		return models.Session{}, errors.New("token still has long lifetime")
 	}*/
 
-	session.ExpiredAt = sql.NullTime{
-		Time:  time.Now().Add(time.Minute * SESSION_TTL),
-		Valid: true,
-	}
+	session.TTL = time.Minute * SESSION_TTL
 
 	err = s.sessionStorage.UpdateSessionExpiration(ctx, &session)
 

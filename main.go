@@ -22,31 +22,46 @@ func main() {
 }
 
 func initialization() *server.Server {
+	// password encryptor
 	pe := util.NewPasswordEncryptor()
 
+	// setup sql database
 	mysqlOption := config.MySqlOption{
 		Address:     "localhost",
 		Username:    "root",
 		Password:    "root",
 		Port:        "3307",
-		Database:    "chat",
+		Database:    "chat-database",
 		IsPopulated: false,
 		IsMigrate:   true,
 	}
 
-	conn := config.NewMySqlConnection(mysqlOption)
-	if err := conn.ConnectToDB(); err != nil {
+	mysqlConn := config.NewMySqlConnection(mysqlOption)
+	if err := mysqlConn.ConnectToDB(); err != nil {
 		log.Fatal(err)
 	}
-	conn.MigrateData()
+	mysqlConn.MigrateData()
 
-	messageStorage := storage.NewMessageStorage(conn.GetDB())
+	// setup redis cache
+	redisOption := config.RedisOption{
+		Address:  "localhost",
+		Port:     "6379",
+		DbNum:    0,
+		Password: "pass123",
+	}
+	redisConn := config.NewRedisConnection(redisOption)
+	if err := redisConn.ConnectToRedis(); err != nil {
+		log.Fatal(err)
+	}
+
+	// setup service & storage layer
+	messageStorage := storage.NewMessageStorage(mysqlConn.GetDB())
 	messageService := service.NewMessageService(messageStorage)
 
-	sessionStorage := storage.NewSessionStorage(conn.GetDB())
+	sessionStorage := storage.NewSessionStorage(mysqlConn.GetDB(), redisConn.GetClient())
 	sessionService := service.NewSessionService(sessionStorage)
 
-	accountStorage := storage.NewAccountStorage(conn.GetDB())
+	accountStorage := storage.NewAccountStorage(mysqlConn.GetDB())
 	accountService := service.NewAccountService(accountStorage, pe)
 
 	handler := handler.NewHttpHandler(accountService, sessionService, messageService)
