@@ -43,8 +43,6 @@ func (rc *redisConnection) ConnectToRedis() error {
 
 	ctx := context.Background()
 
-	defer rc.client.Close()
-
 	if err := rc.client.Conn().ClientSetName(ctx, "myclient").Err(); err != nil {
 		panic(err)
 	}

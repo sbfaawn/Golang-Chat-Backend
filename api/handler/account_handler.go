@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	"golang-chat-backend/models"
 	"golang-chat-backend/models/input"
 
@@ -70,11 +71,13 @@ func (h *HttpHandler) LoginHandler(ctx *gin.Context) {
 	session, err2 := h.sessionService.CreateSession(ctx, account.Username)
 
 	if err2 != nil {
-		generateResponse(ctx, 400, "", err)
+		generateResponse(ctx, 400, "", err2)
 		return
 	}
 
-	ctx.SetCookie("SessionID", session.Id, session.ExpiredAt.Time.Second(), "/", "localhost", false, true)
+	fmt.Println(session.TTL)
+	fmt.Println(session.TTL.Seconds())
+	ctx.SetCookie("SessionID", session.Id, int(session.TTL.Seconds()), "/", "localhost", false, true)
 	generateResponse(ctx, 200, "Login Successfully", nil)
 }
 
@@ -112,7 +115,7 @@ func (h *HttpHandler) RefreshTokenHandler(ctx *gin.Context) {
 		return
 	}
 
-	ctx.SetCookie("SessionID", session.Id, session.ExpiredAt.Time.Second(), "/", "localhost", false, true)
+	ctx.SetCookie("SessionID", session.Id, int(session.TTL.Seconds()), "/", "localhost", false, true)
 	generateResponse(ctx, 200, "Token has been refreshed", nil)
 }
 
@@ -126,7 +129,7 @@ func (h *HttpHandler) CheckSession(ctx *gin.Context) {
 		return
 	}
 
-	err = h.sessionService.CheckSession(ctx, sessionId)
+	_, err = h.sessionService.CheckSession(ctx, sessionId)
 	if err != nil {
 		generateResponse(ctx, 404, "session id is not found", err)
 		ctx.AbortWithError(404, errors.New("session is not found, please input valid session ID or login"))

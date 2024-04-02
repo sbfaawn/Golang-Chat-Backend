@@ -11,12 +11,12 @@ import (
 )
 
 const (
-	SESSION_TTL = 120
+	SESSION_TTL = 60 * time.Minute
 )
 
 type SessionServiceInterface interface {
 	CreateSession(ctx *gin.Context, username string) (models.Session, error)
-	CheckSession(ctx *gin.Context, sessionId string) error
+	CheckSession(ctx *gin.Context, sessionId string) (string, error)
 	RemoveSession(ctx *gin.Context, sessionId string) error
 	UpdateSessionExpiration(ctx *gin.Context, sessionId string) (models.Session, error)
 }
@@ -37,7 +37,7 @@ func (s *SessionService) CreateSession(ctx *gin.Context, username string) (model
 	session := models.Session{
 		Id:       sessionToken,
 		Username: username,
-		TTL:      time.Minute * SESSION_TTL,
+		TTL:      SESSION_TTL,
 	}
 
 	err := s.sessionStorage.SaveSession(ctx, &session)
@@ -49,14 +49,14 @@ func (s *SessionService) CreateSession(ctx *gin.Context, username string) (model
 	return session, nil
 }
 
-func (s *SessionService) CheckSession(ctx *gin.Context, sessionId string) error {
-	_, err := s.sessionStorage.GetSessionById(ctx, sessionId)
+func (s *SessionService) CheckSession(ctx *gin.Context, sessionId string) (string, error) {
+	username, err := s.sessionStorage.GetSessionById(ctx, sessionId)
 
 	if err != nil {
-		return errors.New("Session with SessionId " + sessionId + " is not found")
+		return "", errors.New("Session with SessionId " + sessionId + " is not found")
 	}
 
-	return nil
+	return username, nil
 }
 
 func (s *SessionService) RemoveSession(ctx *gin.Context, sessionId string) error {
@@ -70,17 +70,16 @@ func (s *SessionService) RemoveSession(ctx *gin.Context, sessionId string) error
 }
 
 func (s *SessionService) UpdateSessionExpiration(ctx *gin.Context, sessionId string) (models.Session, error) {
-	session, err := s.sessionStorage.GetSessionById(ctx, sessionId)
+	username, err := s.sessionStorage.GetSessionById(ctx, sessionId)
 
 	if err != nil {
 		return models.Session{}, errors.New("Session with SessionId " + sessionId + " is not found")
 	}
 
-	/*if time.Now().Sub(session.ExpiredAt.Time).Minutes() > 3 {
-		return models.Session{}, errors.New("token still has long lifetime")
-	}*/
-
-	session.TTL = time.Minute * SESSION_TTL
+	session := models.Session{
+		Username: username,
+		TTL:      SESSION_TTL,
+	}
 
 	err = s.sessionStorage.UpdateSessionExpiration(ctx, &session)
 

@@ -32,7 +32,7 @@ func (h *HttpHandler) SendMessages(ctx *gin.Context) {
 
 	err := h.messageService.SendMessage(ctx, &message)
 
-	if err == nil {
+	if err != nil {
 		generateResponse(ctx, 400, "", err)
 		return
 	}
@@ -50,7 +50,7 @@ func (h *HttpHandler) GetConversation(ctx *gin.Context) {
 
 	messages, err := h.messageService.GetConversation(ctx, sender, receiver)
 
-	if err == nil {
+	if err != nil {
 		generateResponse(ctx, 400, "", err)
 		return
 	}

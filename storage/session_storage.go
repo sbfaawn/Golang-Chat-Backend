@@ -10,7 +10,7 @@ import (
 
 type SessionStorageInterface interface {
 	SaveSession(ctx *gin.Context, session *models.Session) error
-	GetSessionById(ctx *gin.Context, sessionId string) (models.Session, error)
+	GetSessionById(ctx *gin.Context, sessionId string) (string, error)
 	DeleteSession(ctx *gin.Context, sessionId string) error
 	UpdateSessionExpiration(ctx *gin.Context, session *models.Session) error
 }
@@ -31,7 +31,7 @@ func (storage *SessionStorage) SaveSession(ctx *gin.Context, session *models.Ses
 	var err error
 	redisClient := storage.redisClient
 
-	setCmd := redisClient.Set(ctx, session.Username, session.Id, session.TTL)
+	setCmd := redisClient.Set(ctx, session.Id, session.Username, session.TTL)
 	if err = setCmd.Err(); err != nil {
 		return err
 	}
@@ -39,25 +39,21 @@ func (storage *SessionStorage) SaveSession(ctx *gin.Context, session *models.Ses
 	return nil
 }
 
-func (storage *SessionStorage) GetSessionById(ctx *gin.Context, sessionId string) (models.Session, error) {
+func (storage *SessionStorage) GetSessionById(ctx *gin.Context, sessionId string) (string, error) {
 	var err error
-	session := models.Session{}
 	redisClient := storage.redisClient
 
 	getCmd := redisClient.Get(ctx, sessionId)
 	if err = getCmd.Err(); err != nil {
-		return session, err
+		return "", err
 	}
 
 	res, err := getCmd.Result()
 	if err != nil {
-		return session, err
+		return "", err
 	}
 
-	session.Username = res
-	session.Id = sessionId
-
-	return session, nil
+	return res, nil
 }
 
 func (storage *SessionStorage) DeleteSession(ctx *gin.Context, sessionId string) error {
@@ -76,7 +72,7 @@ func (storage *SessionStorage) UpdateSessionExpiration(ctx *gin.Context, session
 	var err error
 	redisClient := storage.redisClient
 
-	setCmd := redisClient.Set(ctx, session.Username, session.Id, session.TTL)
+	setCmd := redisClient.Expire(ctx, session.Id, session.TTL)
 	if err = setCmd.Err(); err != nil {
 		return err
 	}
